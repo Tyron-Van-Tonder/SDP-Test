@@ -270,7 +270,7 @@ function renderEmpty() {
         <li><b>From a URL</b> — any public repo is deep-cloned with full history.</li>
         <li><b>From a zip</b> — upload an archive that includes the <code>.git</code> directory.</li>
         <li>Filter by commit range, manual commit list, author, file and directory.</li>
-        <li>Per object: l+, l−, δ, λ, n, η, ρ — plus ownership ω per author.</li>
+        <li>Per object: added, removed, growth, churn, modifications, frequency, churn rate — plus ownership per author.</li>
       </ul>
       <button class="btn primary" data-act="open-add">＋ Add your first repository</button>
     </div>`;
@@ -426,10 +426,10 @@ async function renderTab() {
 
 function statCards(cards) {
   return `<div class="cards">` + cards.map(([k, v, cls, formula]) => `
-    <div class="stat" title="${esc(formula)}">
+    <div class="stat"${formula ? ` title="${esc(formula)}"` : ''}>
       <div class="v ${cls}">${v}</div>
       <div class="k">${esc(k)}</div>
-      <div class="f">${esc(formula.split(' — ')[0])}</div>
+      ${formula ? `<div class="f">${esc(formula.split(' — ')[0])}</div>` : ''}
     </div>`).join('') + `</div>`;
 }
 
@@ -443,7 +443,7 @@ function miniObjects(kind, items, emptyMsg) {
   return `<div class="mini-list">` + list.map((it) => `
     <div class="mini-item" data-act="open-object" data-kind="${kind}" data-path="${esc(it.path)}" title="${esc(it.path || 'repository root')}">
       <span class="p">${esc(it.path || '⟨root⟩')}</span>
-      <span class="n">λ ${fmtInt(it.churn)}</span>
+      <span class="n">${fmtInt(it.churn)}</span>
     </div>`).join('') + `</div>`;
 }
 
@@ -453,7 +453,7 @@ function miniAuthors(items) {
   return `<div class="mini-list">` + list.map((a) => `
     <div class="mini-item" data-act="apply-author" data-id="${a.id}" title="Filter all metrics by ${esc(a.name)}">
       <span class="p" style="font-family:inherit">${esc(a.name || a.email)}</span>
-      <span class="n">λ ${fmtInt(a.churn)}</span>
+      <span class="n">${fmtInt(a.churn)}</span>
     </div>`).join('') + `</div>`;
 }
 
@@ -467,14 +467,14 @@ async function renderOverview(el) {
   ]);
   const t = totalsP.totals;
   const cards = [
-    ['Commits in H', fmtInt(totalsP.commits), '', '|H| — commits in the selected set'],
-    ['Added', '+' + fmtInt(t.added), 'pos', 'l+ — lines added'],
-    ['Removed', '−' + fmtInt(t.removed), 'neg', 'l− — lines removed'],
-    ['Growth', (t.growth >= 0 ? '+' : '−') + fmtInt(Math.abs(t.growth)), t.growth >= 0 ? 'pos' : 'neg', 'δ = l+ − l−'],
-    ['Churn', fmtInt(t.churn), 'blue', 'λ = l+ + l−'],
-    ['Modifications', fmtInt(t.modifications), '', 'n — commits with λ > 0'],
-    ['Mod. frequency', fmtFrac(t.mod_freq), 'teal', 'η = n / |H|'],
-    ['Churn rate', fmtFrac(t.churn_rate), 'teal', 'ρ = λ / |H|'],
+    ['Commits', fmtInt(totalsP.commits), '', ''],
+    ['Added', '+' + fmtInt(t.added), 'pos', ''],
+    ['Removed', '−' + fmtInt(t.removed), 'neg', ''],
+    ['Growth', (t.growth >= 0 ? '+' : '−') + fmtInt(Math.abs(t.growth)), t.growth >= 0 ? 'pos' : 'neg', ''],
+    ['Churn', fmtInt(t.churn), 'blue', ''],
+    ['Modifications', fmtInt(t.modifications), '', ''],
+    ['Mod. frequency', fmtFrac(t.mod_freq), 'teal', ''],
+    ['Churn rate', fmtFrac(t.churn_rate), 'teal', ''],
   ];
   const bucketSeg = ['day', 'week', 'month'].map((b) =>
     `<button data-act="bucket" data-bucket="${b}" class="${state.bucket === b ? 'active' : ''}">${cap(b)}</button>`).join('');
@@ -521,13 +521,13 @@ function sortItems(items, sort) {
 
 const OBJECT_COLS = [
   ['path', 'Path', 'path'],
-  ['added', 'l+', 'num'],
-  ['removed', 'l−', 'num'],
-  ['growth', 'δ', 'num'],
-  ['churn', 'λ', 'num'],
+  ['added', 'Added', 'num'],
+  ['removed', 'Removed', 'num'],
+  ['growth', 'Growth', 'num'],
+  ['churn', 'Churn', 'num'],
   ['modifications', 'n', 'num'],
-  ['mod_freq', 'η', 'num'],
-  ['churn_rate', 'ρ', 'num'],
+  ['mod_freq', 'Mod freq', 'num'],
+  ['churn_rate', 'Churn rate', 'num'],
 ];
 
 function renderCurrentTable(scope) {
@@ -614,7 +614,7 @@ function memberRows(group) {
   const rows = group.members.map((m) => `
     <div class="own-row" style="grid-template-columns: minmax(150px,1.3fr) auto auto">
       <div class="who">${esc(m.name || '(no name)')}<small>${esc(m.email)}</small></div>
-      <div class="num">${fmtInt(m.commits)} commits · λ ${fmtInt(m.churn)}</div>
+      <div class="num">${fmtInt(m.commits)} commits · ${fmtInt(m.churn)} churn</div>
       ${m.id !== group.id
         ? `<button class="btn sm ghost" data-act="unmerge" data-from="${m.id}">unmerge</button>`
         : '<span class="tag">primary</span>'}
@@ -666,8 +666,8 @@ function renderAuthorsTable() {
   cont.innerHTML = `
     <table class="tbl">
       <thead><tr>
-        <th>Author</th><th class="num">|H|</th><th class="num">l+</th><th class="num">l−</th>
-        <th class="num">λ</th><th class="num">n</th><th class="num">η</th><th class="num">ρ</th><th></th>
+        <th>Author</th><th class="num">Commits</th><th class="num">Added</th><th class="num">Removed</th>
+        <th class="num">Churn</th><th class="num">Mods</th><th class="num">Mod freq</th><th class="num">Churn rate</th><th></th>
       </tr></thead>
       <tbody>${rows || '<tr><td colspan="9" class="empty-note">No authors to show.</td></tr>'}</tbody>
     </table>`;
@@ -685,7 +685,7 @@ async function renderAuthorsTab(el) {
     <div class="table-wrap" id="authorsTable"></div>
     <p class="empty-note" style="margin-top:8px">
       Automatic identity merging via <code>.mailmap</code> is applied at ingestion; manual merges below
-      take effect immediately in every metric, including ownership shares (ω).
+      take effect immediately in every metric, including ownership shares.
     </p>`;
   renderAuthorsTable();
 }
@@ -728,7 +728,7 @@ function renderCommitsTable() {
       <thead><tr>
         <th><input type="checkbox" id="pickPage" title="Select this page"></th>
         <th>Hash</th><th>Date</th><th>Author</th><th>Subject</th>
-        <th class="num">l+</th><th class="num">l−</th><th class="num">λ</th>
+        <th class="num">Added</th><th class="num">Removed</th><th class="num">Churn</th>
       </tr></thead>
       <tbody>${rows || '<tr><td colspan="8" class="empty-note">No commits match.</td></tr>'}</tbody>
     </table>`;
@@ -871,9 +871,9 @@ function renderDrawer(d) {
           ${a.members.length > 1 ? `<span class="tag">${a.members.length}</span>` : ''}
           <small>${esc(primary.email || '')}</small>
         </div>
-        <div class="share-bar" title="ω = ${pct}%"><i style="width:${Math.max(1, pct)}%"></i></div>
+        <div class="share-bar" title="${pct}% ownership"><i style="width:${Math.max(1, pct)}%"></i></div>
         <div class="num">
-          ω ${pct}% · λ ${fmtInt(a.churn)} · n ${fmtInt(a.modifications)}
+          ${pct}% · ${fmtInt(a.churn)} churn · ${fmtInt(a.modifications)} mods
           <button class="link" data-act="apply-author" data-id="${a.id}" data-close-drawer="1" title="Filter the dashboard by this author">filter</button>
         </div>
       </div>`;
@@ -894,18 +894,18 @@ function renderDrawer(d) {
       <span class="tag">H = ${fmtInt(d.commits)} commits</span>
     </div>
     <div class="mini-stats">
-      ${miniStat('l+ added', '+' + fmtInt(t.added), 'pos')}
-      ${miniStat('l− removed', '−' + fmtInt(t.removed), 'neg')}
-      ${miniStat('δ growth', (t.growth >= 0 ? '+' : '−') + fmtInt(Math.abs(t.growth)))}
-      ${miniStat('λ churn', fmtInt(t.churn))}
-      ${miniStat('n modifications', fmtInt(t.modifications))}
-      ${miniStat('η frequency', fmtFrac(t.mod_freq))}
-      ${miniStat('ρ churn rate', fmtFrac(t.churn_rate))}
+      ${miniStat('Added', '+' + fmtInt(t.added), 'pos')}
+      ${miniStat('Removed', '−' + fmtInt(t.removed), 'neg')}
+      ${miniStat('Growth', (t.growth >= 0 ? '+' : '−') + fmtInt(Math.abs(t.growth)))}
+      ${miniStat('Churn', fmtInt(t.churn))}
+      ${miniStat('Modifications', fmtInt(t.modifications))}
+      ${miniStat('Frequency', fmtFrac(t.mod_freq))}
+      ${miniStat('Churn rate', fmtFrac(t.churn_rate))}
     </div>
     <h4>Activity over time</h4>
     <div class="seg" style="margin-bottom:8px">${bucketSeg}</div>
     <div id="drawerChart"></div>
-    <h4>Ownership over H — ω = λ(H,o,a) / λ(H,o)</h4>
+    <h4>Ownership</h4>
     <div class="ownership">${ownership}</div>
     ${isDir ? '<h4>Contents</h4><div id="drawerChildren" class="child-grid"><div class="empty-note">Loading…</div></div>' : ''}
     <div style="margin-top:20px;display:flex;gap:8px">
