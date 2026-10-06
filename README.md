@@ -194,18 +194,8 @@ data/           runtime store for ingested repositories (gitignored)
 
 ## AI declaration
 
-* Students: _Tyron van Tonder_ — COMS3011A Software Design Project (test).
-* An AI coding assistant (in-IDE agent) was used throughout this project:
-  drafting and refactoring the implementation, designing the ingestion
-  pipeline and metric engine, writing the frontend, and preparing this
-  README. All design decisions, the metric definitions and the required
-  behaviour come from the test brief.
-* All AI-generated code was reviewed, executed and verified by the student:
-  the parser and metric engine are validated against raw `git` output
-  (commit counts, author counts, `numstat` line sums) on multiple real
-  repositories (toy fixture, cJSON, Redis, git.git), and the UI was
-  exercised end-to-end in a browser.
-* Third-party code: FastAPI / Uvicorn / Starlette / Pydantic (runtime
-  libraries, installed from `requirements.txt`). No frontend libraries or
-  CDN assets are used — HTML, CSS, JavaScript and the SVG chart renderer
-  are purpose-written for this project.
+This repository makes use of AI code generation using the following tools: Qoder[Ultimate].
+This repository makes use of AI in-line editing using the following tools: Qoder[Ultimate].
+This repository does not use AI code review.
+
+The preceding document was generated and edited with the assistance of: Qoder[Ultimate].
