@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RAT · Repo Analysis Tool</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="logo">R</span>RAT <small>repo analysis tool</small></div>
+  <div class="repo-label" id="repoLabel"></div>
+  <div class="spacer"></div>
+  <button class="btn primary" data-act="open-add">＋ Add repository</button>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="side-title"><span>Repositories</span><span id="queueBadge" class="chip queued" hidden></span></div>
+    <div id="repoList"></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+<aside class="drawer" id="drawer" hidden></aside>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal">
+    <header>
+      <h2>Add repository</h2>
+      <button type="button" class="icon-btn" id="modalClose" title="Close">×</button>
+    </header>
+    <div class="seg" id="addMode">
+      <button type="button" data-mode="url" class="active">From URL</button>
+      <button type="button" data-mode="zip">From zip archive</button>
+    </div>
+    <form id="addForm" style="margin-top:14px">
+      <div class="field" id="fieldUrl">
+        <label for="inpUrl">Repository URL (deep clone — full history)</label>
+        <input type="url" id="inpUrl" placeholder="https://github.com/owner/repo.git" autocomplete="off">
+      </div>
+      <div class="field" id="fieldZip" hidden>
+        <label for="inpFile">Zip archive of the repository (must contain the <code>.git</code> directory)</label>
+        <input type="file" id="inpFile" accept=".zip,application/zip">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="inpName">Name (optional)</label>
+          <input type="text" id="inpName" placeholder="derived from the source" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="inpRef">Reference to analyse (optional)</label>
+          <input type="text" id="inpRef" placeholder="HEAD — branch, tag or commit hash" autocomplete="off">
+        </div>
+      </div>
+      <p class="hint">The repository is cloned in full and parsed in a single streaming pass; every
+      metric is precomputed at ingestion so the dashboard answers instantly, even on very large
+      histories. Merge commits are excluded and binary files are not line-counted, per the spec.</p>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="modalCancel">Cancel</button>
+        <button type="submit" class="btn primary" id="addSubmit">Analyse repository</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="/static/charts.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

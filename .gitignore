@@ -1,0 +1,21 @@
+# Runtime data (cloned/uploaded repos + SQLite database)
+data/
+
+# Qoder workspace marker
+.aicoding-chat-workspace
+
+# Experiments / scratch
+.scratch/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
