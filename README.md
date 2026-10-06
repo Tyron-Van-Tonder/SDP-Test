@@ -147,12 +147,13 @@ Every metric endpoint accepts the shared filter parameters:
   and top files / directories / authors with one-click drill-down.
 * **Files / Directories** — sortable, searchable metric tables with CSV
   export; optionally include objects untouched in the current range.
-* **Authors** — the identity table with `|H|`, `l+`, `l−`, `λ`, `n`, `η`, `ρ`,
+* **Authors** — the identity table with commits, added, removed, churn,
+  modifications, modification frequency and churn rate;
   expandable member lists, merge controls and filter-by-author.
 * **Commits** — paged history with search; select commits and *apply* them as
   the manual commit-list filter.
 * **Object inspector** (drawer) — any file or directory: all seven metrics,
-  its own time series, per-author ownership bars (`ω`), and a lazy browser of
+  its own time series, per-author ownership bars, and a lazy browser of
   its contents.
 
 ![Object inspector](docs/screenshot-drawer.png)
